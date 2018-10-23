@@ -45,5 +45,14 @@ describe('Notes interface', () => {
         });
       });
     });
+
+    context('with an invalid `searchTerm`', () => {
+      it('should return an empty array', function () {
+        return notes.filter('rabbit').then((results) => {
+          expect(results).to.be.an('array');
+          expect(results).to.be.empty;
+        });
+      });
+    });
   });
 });
