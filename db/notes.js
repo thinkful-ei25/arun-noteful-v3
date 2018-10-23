@@ -26,7 +26,7 @@ const notes = {
   },
 
   update(id, newNote) {
-    return Note.replaceOne({_id: id}, newNote).then(() => this.find(id));
+    return Note.replaceOne({ _id: id }, newNote).then(() => this.find(id));
   },
 };
 
