@@ -1,4 +1,5 @@
-/* global $ */
+/* eslint-disable */
+
 'use strict';
 
 const api = (function () {

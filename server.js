@@ -1,3 +1,5 @@
+/* eslint-disable no-console */
+
 'use strict';
 
 const express = require('express');
@@ -11,9 +13,11 @@ const notesRouter = require('./routes/notes');
 const app = express();
 
 // Log all requests. Skip logging during
-app.use(morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
-  skip: () => process.env.NODE_ENV === 'test'
-}));
+app.use(
+  morgan(process.env.NODE_ENV === 'development' ? 'dev' : 'common', {
+    skip: () => process.env.NODE_ENV === 'test',
+  }),
+);
 
 // Create a static webserver
 app.use(express.static('public'));
@@ -32,6 +36,7 @@ app.use((req, res, next) => {
 });
 
 // Custom Error Handler
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.status) {
     const errBody = Object.assign({}, err, { message: err.message });
@@ -44,11 +49,13 @@ app.use((err, req, res, next) => {
 
 // Listen for incoming connections
 if (process.env.NODE_ENV !== 'test') {
-  app.listen(PORT, function () {
-    console.info(`Server listening on ${this.address().port}`);
-  }).on('error', err => {
-    console.error(err);
-  });
+  app
+    .listen(PORT, function serverListen() {
+      console.info(`Server listening on ${this.address().port}`);
+    })
+    .on('error', (err) => {
+      console.error(err);
+    });
 }
 
 module.exports = app; // Export for testing

@@ -1,8 +1,8 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable */
+
 'use strict';
 
-const store = (function () {
-
+const store = (function() {
   return {
     notes: [],
     folders: [],
@@ -10,7 +10,6 @@ const store = (function () {
     currentNote: {},
     currentQuery: {
       searchTerm: '',
-    }
+    },
   };
-
-}());
+})();

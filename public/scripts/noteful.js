@@ -1,4 +1,6 @@
-/* global $ store api moment */
+/* eslint-disable */
+/* global store api moment */
+
 'use strict';
 
 const noteful = (function () {
