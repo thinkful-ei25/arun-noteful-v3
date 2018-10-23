@@ -7,4 +7,5 @@ const localUri = process.env.NODE_ENV !== 'test'
 module.exports = {
   PORT: process.env.PORT || 8080,
   MONGODB_URI: process.env.MONGODB_URI || localUri,
+  MONGODB_OPTIONS: { useNewUrlParser: true, useFindAndModify: false },
 };
