@@ -15,6 +15,18 @@ const notes = {
   find(id) {
     return Note.findById(id);
   },
+
+  create(note) {
+    return Note.create(note);
+  },
+
+  delete(id) {
+    return Note.findByIdAndDelete(id);
+  },
+
+  update(id, newNote) {
+    return Note.findByIdAndUpdate(id, newNote, { new: true });
+  },
 };
 
 module.exports = notes;

@@ -58,16 +58,63 @@ describe('Notes interface', () => {
 
   describe('find', () => {
     it('should return null for an invalid id', function () {
-      return notes.find('000000000000000000000008')
+      return notes.find('000000000000000000000008').then((result) => {
+        expect(result).to.be.null;
+      });
+    });
+
+    it('should return the correct object for a valid id', function () {
+      return notes.find('000000000000000000000000').then((result) => {
+        expect(result.title).to.equal('5 life lessons learned from cats');
+      });
+    });
+  });
+
+  describe('create', () => {
+    it('should return the newly created object with a valid id', function () {
+      const newNote = { title: 'Rabbits > Cats', content: "They're cuter!" };
+      return notes.create(newNote).then((result) => {
+        expect(result.toObject()).to.include.all.keys([
+          '_id',
+          'createdAt',
+          'updatedAt',
+          'title',
+          'content',
+        ]);
+        expect(result.title).to.equal(newNote.title);
+      });
+    });
+  });
+
+  describe('delete', () => {
+    it('with a valid id, it should remove the object', function () {
+      const fixtureId = '000000000000000000000002';
+      return notes
+        .delete(fixtureId)
+        .then(() => Note.findById(fixtureId))
         .then((result) => {
           expect(result).to.be.null;
         });
     });
 
-    it('should return the correct object for a valid id', function () {
-      return notes.find('000000000000000000000000')
+    it('with an invalid id, it should return null', function () {
+      const fixtureId = '000000000000000000000010';
+      return notes.delete(fixtureId).then((result) => {
+        expect(result).to.be.null;
+      });
+    });
+  });
+
+  describe('update', () => {
+    it('with a valid id it should return the updated object', function () {
+      const update = { title: 'rabbits > cats' };
+      const fixtureId = '000000000000000000000003';
+      return notes.update(fixtureId, update)
         .then((result) => {
-          expect(result.title).to.equal('5 life lessons learned from cats');
+          expect(result).to.be.an('object');
+          expect(result.title).to.equal(update.title);
+          // eslint-disable-next-line no-underscore-dangle
+          expect(result._id.toString()).to.equal(fixtureId);
         });
     });
   });
