@@ -6,7 +6,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
 
-const { MONGODB_URI, PORT } = require('./config');
+const { MONGODB_URI, MONGODB_OPTIONS, PORT } = require('./config');
 const notesRouter = require('./routes/notes');
 
 // Create an Express application
@@ -52,7 +52,7 @@ if (process.env.NODE_ENV !== 'test') {
   mongoose
     .connect(
       MONGODB_URI,
-      { useNewUrlParser: true },
+      MONGODB_OPTIONS,
     )
     .catch((err) => {
       console.error(`Error: ${err.message}`);

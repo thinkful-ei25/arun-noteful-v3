@@ -8,5 +8,12 @@ const noteSchema = new mongoose.Schema({
 });
 
 noteSchema.set('timestamps', true);
+noteSchema.set('toJSON', {
+  virtuals: true,
+  transform(doc, ret) {
+    delete ret._id; /* eslint-disable-line no-param-reassign, no-underscore-dangle */
+    delete ret.__v; /* eslint-disable-line no-param-reassign, no-underscore-dangle */
+  },
+});
 
 module.exports = mongoose.model('Note', noteSchema);

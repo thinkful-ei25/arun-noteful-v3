@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 const mongoose = require('mongoose');
 
-const { MONGODB_URI } = require('../../config');
+const { MONGODB_URI, MONGODB_OPTIONS } = require('../../config');
 const Note = require('../../models/Note');
 const notes = require('../../db/notes');
 const notesSeed = require('../../db/seed/notes');
@@ -12,7 +12,7 @@ describe('Notes interface', () => {
   before(() => mongoose
     .connect(
       MONGODB_URI,
-      { useNewUrlParser: true },
+      MONGODB_OPTIONS,
     )
     .then(() => mongoose.connection.db.dropDatabase()));
 
@@ -35,6 +35,16 @@ describe('Notes interface', () => {
         const expectedTitles = [notesSeed.notes[2].title, notesSeed.notes[4].title];
         return notes.filter("you'll").then((results) => {
           expect(results).to.have.length(2);
+          expect(results.map(note => note.title)).to.have.members(expectedTitles);
+        });
+      });
+
+      it('should return notes with `searchTerm` in the contents', function () {
+        const expectedTitles = [0, 2, 4, 6].map(
+          index => notesSeed.notes[index].title,
+        );
+        return notes.filter('lorem').then((results) => {
+          expect(results).to.have.length(4);
           expect(results.map(note => note.title)).to.have.members(expectedTitles);
         });
       });
@@ -109,13 +119,13 @@ describe('Notes interface', () => {
     it('with a valid id it should return the updated object', function () {
       const update = { title: 'rabbits > cats' };
       const fixtureId = '000000000000000000000003';
-      return notes.update(fixtureId, update)
-        .then((result) => {
-          expect(result).to.be.an('object');
-          expect(result.title).to.equal(update.title);
-          // eslint-disable-next-line no-underscore-dangle
-          expect(result._id.toString()).to.equal(fixtureId);
-        });
+      return notes.update(fixtureId, update).then((result) => {
+        expect(result).to.be.an('object');
+        expect(result.title).to.equal(update.title);
+        expect(result.content).to.not.exist;
+        // eslint-disable-next-line no-underscore-dangle
+        expect(result._id.toString()).to.equal(fixtureId);
+      });
     });
   });
 });
