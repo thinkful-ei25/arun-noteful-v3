@@ -1,3 +1,4 @@
+/* eslint-disable */
 const notes = [
   {
     '_id': '000000000000000000000000',

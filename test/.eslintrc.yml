@@ -3,3 +3,5 @@ env:
 
 rules:
   no-unused-expressions: off
+  func-names: off
+  prefer-arrow-callback: off

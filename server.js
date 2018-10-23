@@ -3,10 +3,10 @@
 'use strict';
 
 const express = require('express');
+const mongoose = require('mongoose');
 const morgan = require('morgan');
 
-const { PORT } = require('./config');
-
+const { MONGODB_URI, PORT } = require('./config');
 const notesRouter = require('./routes/notes');
 
 // Create an Express application
@@ -49,6 +49,16 @@ app.use((err, req, res, next) => {
 
 // Listen for incoming connections
 if (process.env.NODE_ENV !== 'test') {
+  mongoose
+    .connect(
+      MONGODB_URI,
+      { useNewUrlParser: true },
+    )
+    .catch((err) => {
+      console.error(`Error: ${err.message}`);
+      console.error(err);
+    });
+
   app
     .listen(PORT, function serverListen() {
       console.info(`Server listening on ${this.address().port}`);
