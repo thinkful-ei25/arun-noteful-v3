@@ -39,6 +39,16 @@ describe('Notes interface', () => {
         });
       });
 
+      it('should return notes with `searchTerm` in the contents', function () {
+        const expectedTitles = [0, 2, 4, 6].map(
+          index => notesSeed.notes[index].title,
+        );
+        return notes.filter('lorem').then((results) => {
+          expect(results).to.have.length(4);
+          expect(results.map(note => note.title)).to.have.members(expectedTitles);
+        });
+      });
+
       it('should search using case insensitve matches', function () {
         return notes.filter('lady gaga').then((results) => {
           expect(results).to.have.length(1);
@@ -109,14 +119,13 @@ describe('Notes interface', () => {
     it('with a valid id it should return the updated object', function () {
       const update = { title: 'rabbits > cats' };
       const fixtureId = '000000000000000000000003';
-      return notes.update(fixtureId, update)
-        .then((result) => {
-          expect(result).to.be.an('object');
-          expect(result.title).to.equal(update.title);
-          expect(result.content).to.not.exist;
-          // eslint-disable-next-line no-underscore-dangle
-          expect(result._id.toString()).to.equal(fixtureId);
-        });
+      return notes.update(fixtureId, update).then((result) => {
+        expect(result).to.be.an('object');
+        expect(result.title).to.equal(update.title);
+        expect(result.content).to.not.exist;
+        // eslint-disable-next-line no-underscore-dangle
+        expect(result._id.toString()).to.equal(fixtureId);
+      });
     });
   });
 });

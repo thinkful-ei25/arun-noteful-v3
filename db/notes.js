@@ -6,7 +6,8 @@ const notes = {
   filter(searchTerm) {
     const filter = {};
     if (searchTerm) {
-      filter.title = new RegExp(searchTerm, 'i');
+      const compiledSearch = new RegExp(searchTerm, 'i');
+      filter.$or = [{ title: compiledSearch }, { content: compiledSearch }];
     }
 
     return Note.find(filter).sort({ updatedAt: 'desc' });
