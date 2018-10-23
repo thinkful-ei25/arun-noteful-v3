@@ -11,6 +11,10 @@ const notes = {
 
     return Note.find(filter).sort({ updatedAt: 'desc' });
   },
+
+  find(id) {
+    return Note.findById(id);
+  },
 };
 
 module.exports = notes;

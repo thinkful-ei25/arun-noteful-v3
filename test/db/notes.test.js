@@ -55,4 +55,20 @@ describe('Notes interface', () => {
       });
     });
   });
+
+  describe('find', () => {
+    it('should return null for an invalid id', function () {
+      return notes.find('000000000000000000000008')
+        .then((result) => {
+          expect(result).to.be.null;
+        });
+    });
+
+    it('should return the correct object for a valid id', function () {
+      return notes.find('000000000000000000000000')
+        .then((result) => {
+          expect(result.title).to.equal('5 life lessons learned from cats');
+        });
+    });
+  });
 });
