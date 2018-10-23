@@ -113,6 +113,7 @@ describe('Notes interface', () => {
         .then((result) => {
           expect(result).to.be.an('object');
           expect(result.title).to.equal(update.title);
+          expect(result.content).to.not.exist;
           // eslint-disable-next-line no-underscore-dangle
           expect(result._id.toString()).to.equal(fixtureId);
         });
