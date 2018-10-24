@@ -49,6 +49,7 @@ describe('/api/notes', () => {
     });
 
     context('with searchTerm', () => {
+      // eslint-disable-next-line max-len
       it('should return notes that contain the `searchTerm` in either the title or content fields', function () {
         let expectedResults;
 
