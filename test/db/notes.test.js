@@ -5,7 +5,7 @@
 const { expect } = require('chai');
 const mongoose = require('mongoose');
 
-const { MONGODB_URI, MONGODB_OPTIONS } = require('../../config');
+const { TEST_DATABASE_URL, MONGODB_OPTIONS } = require('../../config');
 const Note = require('../../models/Note');
 const notes = require('../../db/notes');
 const notesSeed = require('../../db/seed/notes');
@@ -13,7 +13,7 @@ const notesSeed = require('../../db/seed/notes');
 describe('Notes interface', () => {
   before(() => mongoose
     .connect(
-      MONGODB_URI,
+      TEST_DATABASE_URL,
       MONGODB_OPTIONS,
     )
     .then(() => mongoose.connection.db.dropDatabase()));
