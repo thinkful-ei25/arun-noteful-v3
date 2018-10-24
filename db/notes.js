@@ -26,7 +26,8 @@ const notes = {
   },
 
   update(id, newNote) {
-    return Note.replaceOne({ _id: id }, newNote).then(() => this.find(id));
+    const update = Object.assign({ title: undefined, content: undefined }, newNote);
+    return Note.findByIdAndUpdate(id, update, { new: true });
   },
 };
 

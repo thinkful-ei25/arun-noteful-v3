@@ -1,3 +1,5 @@
+/* eslint-disable no-underscore-dangle */
+
 'use strict';
 
 const { expect } = require('chai');
@@ -40,9 +42,7 @@ describe('Notes interface', () => {
       });
 
       it('should return notes with `searchTerm` in the contents', function () {
-        const expectedTitles = [0, 2, 4, 6].map(
-          index => notesSeed.notes[index].title,
-        );
+        const expectedTitles = [0, 2, 4, 6].map(index => notesSeed.notes[index].title);
         return notes.filter('lorem').then((results) => {
           expect(results).to.have.length(4);
           expect(results.map(note => note.title)).to.have.members(expectedTitles);
@@ -81,8 +81,9 @@ describe('Notes interface', () => {
   });
 
   describe('create', () => {
+    const newNote = { title: 'Rabbits > Cats', content: "They're cuter!" };
+
     it('should return the newly created object with a valid id', function () {
-      const newNote = { title: 'Rabbits > Cats', content: "They're cuter!" };
       return notes.create(newNote).then((result) => {
         expect(result.toObject()).to.include.all.keys([
           '_id',
@@ -93,6 +94,16 @@ describe('Notes interface', () => {
         ]);
         expect(result.title).to.equal(newNote.title);
       });
+    });
+
+    it('should persist the newly created object to the database', function () {
+      return notes
+        .create(newNote)
+        .then(result => Note.findById(result._id))
+        .then((result) => {
+          expect(result.title).to.equal(newNote.title);
+          expect(result.content).to.equal(newNote.content);
+        });
     });
   });
 
@@ -116,16 +127,33 @@ describe('Notes interface', () => {
   });
 
   describe('update', () => {
+    const update = { title: 'rabbits > cats' };
+    const fixtureId = '000000000000000000000003';
+
     it('with a valid id it should return the updated object', function () {
-      const update = { title: 'rabbits > cats' };
-      const fixtureId = '000000000000000000000003';
       return notes.update(fixtureId, update).then((result) => {
         expect(result).to.be.an('object');
         expect(result.title).to.equal(update.title);
         expect(result.content).to.not.exist;
-        // eslint-disable-next-line no-underscore-dangle
         expect(result._id.toString()).to.equal(fixtureId);
       });
+    });
+
+    it('should persist changes to the database', function () {
+      let originalNote;
+      return Note
+        .findById(fixtureId)
+        .then((result) => {
+          originalNote = result;
+        })
+        .then(() => notes.update(fixtureId, update))
+        .then(() => Note.findById(fixtureId))
+        .then((result) => {
+          expect(result.title).to.equal(update.title);
+          expect(result.content).to.not.exist;
+          expect(result.createdAt.getTime()).to.equal(originalNote.createdAt.getTime());
+          expect(result.updatedAt).to.be.greaterThan(originalNote.createdAt);
+        });
     });
   });
 });
