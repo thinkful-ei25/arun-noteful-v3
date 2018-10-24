@@ -52,8 +52,7 @@ describe('/api/notes', () => {
       it('should return notes that contain the `searchTerm` in either the title or content fields', function () {
         let expectedResults;
 
-        return Note
-          .find({ title: /you/i })
+        return Note.find({ title: /you/i })
           .then((results) => {
             expectedResults = results.map(note => JSON.parse(JSON.stringify(note)));
           })
@@ -87,6 +86,32 @@ describe('/api/notes', () => {
             expect(res.body).to.be.empty;
           });
       });
+    });
+  });
+
+  describe('GET /api/:id', () => {
+    it('given a valid id it should return the correct note', function () {
+      let noteFixture;
+      return Note.findOne()
+        .then((result) => {
+          noteFixture = JSON.parse(JSON.stringify(result));
+        })
+        .then(() => chai.request(app).get(`/api/notes/${noteFixture.id}`))
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.deep.equal(noteFixture);
+        });
+    });
+
+    it('given an invalid id it should return status 404', function () {
+      return chai
+        .request(app)
+        .get('/api/notes/hahaha')
+        .then((res) => {
+          expect(res).to.have.status(404);
+        });
     });
   });
 });

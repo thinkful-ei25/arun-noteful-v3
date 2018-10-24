@@ -1,6 +1,10 @@
 'use strict';
 
+const mongoose = require('mongoose');
+
 const Note = require('../models/Note');
+
+const { CastError } = mongoose;
 
 const notes = {
   filter(searchTerm) {
@@ -14,7 +18,14 @@ const notes = {
   },
 
   find(id) {
-    return Note.findById(id);
+    return Note.findById(id).catch((err) => {
+      if (Object.prototype.isPrototypeOf.call(CastError.prototype, err)) {
+        Promise.resolve(null);
+        return;
+      }
+
+      Promise.reject(err);
+    });
   },
 
   create(note) {
