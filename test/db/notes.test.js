@@ -57,6 +57,19 @@ describe('Notes interface', () => {
         });
       });
     });
+
+    context('with folderId', () => {
+      it('should filter results without that folderId', function () {
+        const folderIdFixture = '111111111111111111111101';
+        const expected = notesData.filter(note => note.folderId === folderIdFixture);
+        return notes.filter(null, folderIdFixture).then((results) => {
+          expect(results).to.have.lengthOf(expected.length);
+          expect(results.map(r => r._id.toString())).to.have.members(
+            expected.map(r => r._id),
+          );
+        });
+      });
+    });
   });
 
   describe('find', () => {
@@ -134,8 +147,7 @@ describe('Notes interface', () => {
 
     it('should persist changes to the database', function () {
       let originalNote;
-      return Note
-        .findById(fixtureId)
+      return Note.findById(fixtureId)
         .then((result) => {
           originalNote = result;
         })

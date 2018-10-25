@@ -94,6 +94,23 @@ describe('/api/notes', () => {
           });
       });
     });
+
+    context('with folderId', () => {
+      it('should return only notes with that folderId', function () {
+        const folderIdFixture = notesData[0].folderId;
+        const expectedNotes = notesData.filter(
+          note => note.folderId === folderIdFixture,
+        );
+
+        return chai
+          .request(app)
+          .get(`/api/notes?folderId=${folderIdFixture}`)
+          .then((res) => {
+            expect(res).to.have.status(200);
+            expect(res.body).to.have.length(expectedNotes.length);
+          });
+      });
+    });
   });
 
   describe('GET /api/:id', () => {

@@ -38,11 +38,15 @@ function handleMongoDuplicationError(err, folder) {
 }
 
 const notes = {
-  filter(searchTerm) {
+  filter(searchTerm, folderId) {
     const filter = {};
     if (searchTerm) {
       const compiledSearch = new RegExp(searchTerm, 'i');
       filter.$or = [{ title: compiledSearch }, { content: compiledSearch }];
+    }
+
+    if (folderId) {
+      filter.folderId = folderId;
     }
 
     return Note.find(filter).sort({ updatedAt: 'desc' });

@@ -8,10 +8,10 @@ const router = express.Router();
 
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
-  const { searchTerm } = req.query;
+  const { searchTerm, folderId } = req.query;
 
   notes
-    .filter(searchTerm)
+    .filter(searchTerm, folderId)
     .then(results => res.json(results))
     .catch(next);
 });
