@@ -18,5 +18,6 @@ mongoose
   .then(results => console.info(`Inserted ${results.length} Notes`))
   .then(() => Folder.insertMany(folders))
   .then(results => console.log(`Inserted ${results.length} Folders`))
+  .then(() => Folder.createIndexes())
   .then(() => mongoose.disconnect())
   .catch(console.err);
