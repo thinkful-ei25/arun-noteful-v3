@@ -89,9 +89,12 @@ router.put('/:id', (req, res, next) => {
   notes
     .update(id, updateObj)
     .then((result) => {
-      if (result) {
-        res.json(result);
+      if (!result) {
+        next();
+        return;
       }
+
+      res.json(result);
     })
     .catch(next);
 });

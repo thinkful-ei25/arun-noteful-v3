@@ -3,25 +3,20 @@
 'use strict';
 
 const { expect } = require('chai');
-const mongoose = require('mongoose');
 
-const { TEST_DATABASE_URL, MONGODB_OPTIONS } = require('../../config');
 const Note = require('../../models/Note');
 const notes = require('../../db/notes');
-const notesSeed = require('../../db/seed/notes');
+const notesData = require('../../db/seed/notes');
+const utils = require('../utils');
 
 describe('Notes interface', () => {
-  before(() => mongoose
-    .connect(
-      TEST_DATABASE_URL,
-      MONGODB_OPTIONS,
-    )
-    .then(() => mongoose.connection.db.dropDatabase()));
+  before(() => utils.connectToDatabase());
 
-  beforeEach(() => Note.insertMany(notesSeed.notes));
+  beforeEach(() => Note.insertMany(notesData.notes));
 
-  afterEach(() => mongoose.connection.db.dropDatabase());
-  after(() => mongoose.disconnect());
+  afterEach(() => utils.clearDatabase());
+
+  after(() => utils.disconnectFromDatabase());
 
   describe('filter', () => {
     context('without a `searchTerm`', () => {
@@ -34,7 +29,7 @@ describe('Notes interface', () => {
 
     context('with a valid `searchTerm`', () => {
       it('should return notes with `searchTerm` in the title', function () {
-        const expectedTitles = [notesSeed.notes[2].title, notesSeed.notes[4].title];
+        const expectedTitles = [notesData.notes[2].title, notesData.notes[4].title];
         return notes.filter("you'll").then((results) => {
           expect(results).to.have.length(2);
           expect(results.map(note => note.title)).to.have.members(expectedTitles);
@@ -42,7 +37,7 @@ describe('Notes interface', () => {
       });
 
       it('should return notes with `searchTerm` in the contents', function () {
-        const expectedTitles = [0, 2, 4, 6].map(index => notesSeed.notes[index].title);
+        const expectedTitles = [0, 2, 4, 6].map(index => notesData.notes[index].title);
         return notes.filter('lorem').then((results) => {
           expect(results).to.have.length(4);
           expect(results.map(note => note.title)).to.have.members(expectedTitles);
@@ -119,7 +114,7 @@ describe('Notes interface', () => {
     });
 
     it('with an invalid id, it should return null', function () {
-      const fixtureId = '000000000000000000000010';
+      const fixtureId = 'test';
       return notes.delete(fixtureId).then((result) => {
         expect(result).to.be.null;
       });
