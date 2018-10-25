@@ -1,6 +1,7 @@
 'use strict';
 
 const express = require('express');
+const mongoose = require('mongoose');
 
 const { notes } = require('../db');
 
@@ -36,7 +37,7 @@ router.get('/:id', (req, res, next) => {
 /* ========== POST/CREATE AN ITEM ========== */
 router.post('/', (req, res, next) => {
   const newNote = {};
-  ['content', 'title'].forEach((key) => {
+  ['content', 'title', 'folderId'].forEach((key) => {
     if (req.body[key]) {
       newNote[key] = req.body[key];
     }
@@ -47,6 +48,18 @@ router.post('/', (req, res, next) => {
     err.status = 400;
     next(err);
     return;
+  }
+
+  if (newNote.folderId) {
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const folderId = new mongoose.Types.ObjectId(newNote.folderId);
+    } catch (err) {
+      const returnedError = new Error('`folderId` must be a valid ObjectId');
+      returnedError.status = 400;
+      next(returnedError);
+      return;
+    }
   }
 
   notes

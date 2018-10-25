@@ -172,7 +172,11 @@ describe('/api/notes', () => {
   });
 
   describe('POST /api/notes', () => {
-    const fixture = { title: 'My title', content: 'My content has content' };
+    const fixture = {
+      title: 'My title',
+      content: 'My content has content',
+      folderId: '000000000000000000000003',
+    };
 
     it('should return the new note with a location reference', function () {
       return chai
@@ -186,6 +190,7 @@ describe('/api/notes', () => {
           expect(res.body).to.be.an('object');
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
+          expect(res.body.folderId).to.equal(fixture.folderId);
         });
     });
 
@@ -203,6 +208,18 @@ describe('/api/notes', () => {
           expect(res).to.have.status(200);
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
+        });
+    });
+
+    it('should return a 400 error if folderId is an invalid ObjectId', function () {
+      const invalidFixture = Object.assign({}, fixture, { folderId: 'test' });
+      return chai
+        .request(app)
+        .post('/api/notes')
+        .send(invalidFixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`folderId` must be a valid ObjectId');
         });
     });
   });
