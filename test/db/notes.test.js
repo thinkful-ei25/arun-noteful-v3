@@ -3,7 +3,7 @@
 const { expect } = require('chai');
 
 const Note = require('../../models/Note');
-const notes = require('../../db/notes');
+const { notes } = require('../../db');
 const notesData = require('../../db/seed/notes');
 const utils = require('../utils');
 
