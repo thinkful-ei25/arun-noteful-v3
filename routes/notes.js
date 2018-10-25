@@ -86,7 +86,7 @@ router.put('/:id', (req, res, next) => {
   }
 
   const updateObj = {};
-  ['title', 'content'].forEach((key) => {
+  ['title', 'content', 'folderId'].forEach((key) => {
     if (req.body[key]) {
       updateObj[key] = req.body[key];
     }
@@ -97,6 +97,18 @@ router.put('/:id', (req, res, next) => {
     err.status = 400;
     next(err);
     return;
+  }
+
+  if (updateObj.folderId) {
+    try {
+      // eslint-disable-next-line no-unused-vars
+      const oid = new mongoose.Types.ObjectId(updateObj.folderId);
+    } catch (err) {
+      const returnedError = new Error('`folderId` must be a valid ObjectId');
+      returnedError.status = 400;
+      next(returnedError);
+      return;
+    }
   }
 
   notes

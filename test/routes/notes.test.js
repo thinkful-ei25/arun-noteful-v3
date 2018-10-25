@@ -273,6 +273,23 @@ describe('/api/notes', () => {
           expect(res).to.be.json;
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
+          expect(res.body.folderId).to.be.null;
+        });
+    });
+
+    it('should return 400 if the folderId is not a valid ObjectId', function () {
+      const updateObj = Object.assign({}, fixture, { folderId: 'happy' });
+      return Note.findOne()
+        .then((result) => {
+          updateObj.id = result.id;
+          return chai
+            .request(app)
+            .put(`/api/notes/${updateObj.id}`)
+            .send(updateObj);
+        })
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`folderId` must be a valid ObjectId');
         });
     });
   });
