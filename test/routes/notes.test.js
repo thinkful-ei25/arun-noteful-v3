@@ -185,8 +185,8 @@ describe('/api/notes', () => {
   });
 
   describe('PUT /api/notes', () => {
-    const fixture = { 
-      title: 'Rabbit' > 'Cats',
+    const fixture = {
+      title: 'Rabbit > Cats',
       content: 'Lorem ipsum dolor',
     };
 
@@ -197,6 +197,36 @@ describe('/api/notes', () => {
         .send(fixture)
         .then((res) => {
           expect(res).to.have.status(404);
+        });
+    });
+
+    it('should return 400 if required fields are missing', function () {
+      return Note.findOne()
+        .then((result) => {
+          const updateObj = {
+            content: fixture.content,
+            id: result.id,
+          };
+          return chai.request(app).put(`/api/notes/${result.id}`).send(updateObj);
+        })
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res).to.be.json;
+          expect(res.body.message).to.equal('Missing `title` in request body');
+        });
+    });
+
+    it('should update and return the updated note if provided valid data', function () {
+      return Note.findOne()
+        .then((testSubject) => {
+          const updateObj = Object.assign({}, fixture, { id: testSubject.id });
+          return chai.request(app).put(`/api/notes/${updateObj.id}`).send(updateObj);
+        })
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body.title).to.equal(fixture.title);
+          expect(res.body.content).to.equal(fixture.content);
         });
     });
   });
