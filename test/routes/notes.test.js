@@ -115,4 +115,36 @@ describe('/api/notes', () => {
         });
     });
   });
+
+  describe('DELETE /api/notes/:id', () => {
+    it('should only remove the correct note', function () {
+      let originalNotes;
+      return Note.find()
+        .then((results) => {
+          originalNotes = results;
+        })
+        .then(() => chai.request(app).delete(`/api/notes/${originalNotes[0].id}`))
+        .then(() => Note.find())
+        .then((results) => {
+          expect(results).to.have.lengthOf(originalNotes.length - 1);
+          expect(results).to.not.deep.include(originalNotes[0]);
+        });
+    });
+
+    it('should return 204 on successful removal, and be idempotent', function () {
+      let noteIdFixture;
+      return Note.findOne()
+        .then((result) => {
+          noteIdFixture = result.id;
+        })
+        .then(() => chai.request(app).delete(`/api/notes/${noteIdFixture}`))
+        .then((res) => {
+          expect(res).to.have.status(204);
+        })
+        .then(() => chai.request(app).delete(`/api/notes/${noteIdFixture}`))
+        .then((res) => {
+          expect(res).to.have.status(204);
+        });
+    });
+  });
 });
