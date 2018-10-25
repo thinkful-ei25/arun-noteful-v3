@@ -50,6 +50,10 @@ const folders = {
     return Folder.find();
   },
 
+  find(id) {
+    return Folder.findById(id).catch(returnNullOnCastError);
+  },
+
   seed(data) {
     return Folder.insertMany(data);
   },

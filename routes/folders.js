@@ -13,4 +13,17 @@ router.get('/', (req, res, next) => {
     .catch(next);
 });
 
+router.get('/:id', (req, res, next) => {
+  const { id } = req.params;
+  folders
+    .find(id)
+    .then((result) => {
+      if (!result) {
+        next();
+        return;
+      }
+      res.json(result);
+    });
+});
+
 module.exports = router;
