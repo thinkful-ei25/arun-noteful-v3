@@ -2,6 +2,7 @@
 
 const mongoose = require('mongoose');
 
+const Folder = require('../models/Folder');
 const Note = require('../models/Note');
 
 const { CastError } = mongoose;
@@ -44,4 +45,14 @@ const notes = {
   },
 };
 
-module.exports = { notes };
+const folders = {
+  fetch() {
+    return Folder.find();
+  },
+
+  seed(data) {
+    return Folder.insertMany(data);
+  },
+};
+
+module.exports = { notes, folders };
