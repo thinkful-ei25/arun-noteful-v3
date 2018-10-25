@@ -6,6 +6,13 @@ const Note = require('../models/Note');
 
 const { CastError } = mongoose;
 
+function returnNullOnCastError(err) {
+  if (Object.prototype.isPrototypeOf.call(CastError.prototype, err)) {
+    return Promise.resolve(null);
+  }
+  return Promise.reject(err);
+}
+
 const notes = {
   filter(searchTerm) {
     const filter = {};
@@ -18,14 +25,7 @@ const notes = {
   },
 
   find(id) {
-    return Note.findById(id).catch((err) => {
-      if (Object.prototype.isPrototypeOf.call(CastError.prototype, err)) {
-        Promise.resolve(null);
-        return;
-      }
-
-      Promise.reject(err);
-    });
+    return Note.findById(id).catch(returnNullOnCastError);
   },
 
   create(note) {
@@ -33,12 +33,14 @@ const notes = {
   },
 
   delete(id) {
-    return Note.findByIdAndDelete(id);
+    return Note.findByIdAndDelete(id).catch(returnNullOnCastError);
   },
 
   update(id, newNote) {
     const update = Object.assign({ title: undefined, content: undefined }, newNote);
-    return Note.findByIdAndUpdate(id, update, { new: true });
+    return Note.findByIdAndUpdate(id, update, { new: true }).catch(
+      returnNullOnCastError,
+    );
   },
 };
 

@@ -183,4 +183,21 @@ describe('/api/notes', () => {
         });
     });
   });
+
+  describe('PUT /api/notes', () => {
+    const fixture = { 
+      title: 'Rabbit' > 'Cats',
+      content: 'Lorem ipsum dolor',
+    };
+
+    it('should return 404 if `id` is invalid', function () {
+      return chai
+        .request(app)
+        .put('/api/notes/test')
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(404);
+        });
+    });
+  });
 });

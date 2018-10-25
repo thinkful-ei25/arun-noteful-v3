@@ -114,7 +114,7 @@ describe('Notes interface', () => {
     });
 
     it('with an invalid id, it should return null', function () {
-      const fixtureId = '000000000000000000000010';
+      const fixtureId = 'test';
       return notes.delete(fixtureId).then((result) => {
         expect(result).to.be.null;
       });
