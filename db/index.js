@@ -7,6 +7,17 @@ const Note = require('../models/Note');
 
 const { CastError } = mongoose;
 
+function ItemAlreadyExistsError(message, err) {
+  this.name = 'ItemAlreadyExistsError';
+  this.message = message;
+  this.stack = Error.captureStackTrace(this, ItemAlreadyExistsError);
+
+  if (err) {
+    this.mongoError = err.message;
+  }
+}
+ItemAlreadyExistsError.prototype = Object.create(Error.prototype);
+
 function returnNullOnCastError(err) {
   if (Object.prototype.isPrototypeOf.call(CastError.prototype, err)) {
     return Promise.resolve(null);
@@ -54,9 +65,23 @@ const folders = {
     return Folder.findById(id).catch(returnNullOnCastError);
   },
 
+  create(folder) {
+    return Folder.create(folder).catch((err) => {
+      if (err.code === 11000 && err.name === 'MongoError') {
+        return Promise.reject(
+          new ItemAlreadyExistsError(
+            `Cannot create new folder as \`name\` of ${folder.name} already exists`,
+            err,
+          ),
+        );
+      }
+      return Promise.reject(err);
+    });
+  },
+
   seed(data) {
-    return Folder.insertMany(data);
+    return Promise.all([Folder.insertMany(data), Folder.createIndexes()]);
   },
 };
 
-module.exports = { notes, folders };
+module.exports = { folders, ItemAlreadyExistsError, notes };
