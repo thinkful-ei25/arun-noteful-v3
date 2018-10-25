@@ -61,7 +61,10 @@ const notes = {
   },
 
   update(id, newNote) {
-    const update = Object.assign({ title: undefined, content: undefined }, newNote);
+    const update = Object.assign(
+      { title: undefined, content: undefined, folderId: undefined },
+      newNote,
+    );
     return Note.findByIdAndUpdate(id, update, { new: true }).catch(
       returnNullOnCastError,
     );

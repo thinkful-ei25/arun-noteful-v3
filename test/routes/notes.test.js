@@ -31,7 +31,13 @@ describe('/api/notes', () => {
           expect(res.body).to.be.an('array');
           expect(res.body).to.have.length(notesCount);
           res.body.forEach((note) => {
-            expect(note).to.include.keys('title', 'id', 'createdAt', 'updatedAt');
+            expect(note).to.include.keys(
+              'title',
+              'id',
+              'createdAt',
+              'updatedAt',
+              'folderId',
+            );
           });
         });
     });
@@ -207,7 +213,10 @@ describe('/api/notes', () => {
             content: fixture.content,
             id: result.id,
           };
-          return chai.request(app).put(`/api/notes/${result.id}`).send(updateObj);
+          return chai
+            .request(app)
+            .put(`/api/notes/${result.id}`)
+            .send(updateObj);
         })
         .then((res) => {
           expect(res).to.have.status(400);
@@ -220,7 +229,10 @@ describe('/api/notes', () => {
       return Note.findOne()
         .then((testSubject) => {
           const updateObj = Object.assign({}, fixture, { id: testSubject.id });
-          return chai.request(app).put(`/api/notes/${updateObj.id}`).send(updateObj);
+          return chai
+            .request(app)
+            .put(`/api/notes/${updateObj.id}`)
+            .send(updateObj);
         })
         .then((res) => {
           expect(res).to.have.status(200);
