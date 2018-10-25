@@ -147,4 +147,40 @@ describe('/api/notes', () => {
         });
     });
   });
+
+  describe('POST /api/notes', () => {
+    const fixture = { title: 'My title', content: 'My content has content' };
+
+    it('should return the new note with a location reference', function () {
+      return chai
+        .request(app)
+        .post('/api/notes')
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res.header.location).to.equal(`/api/notes/${res.body.id}`);
+          expect(res.body).to.be.an('object');
+          expect(res.body.title).to.equal(fixture.title);
+          expect(res.body.content).to.equal(fixture.content);
+        });
+    });
+
+    it('should create a note available on subsequent reads', function () {
+      let returnedUri;
+      return chai
+        .request(app)
+        .post('/api/notes')
+        .send(fixture)
+        .then((res) => {
+          returnedUri = res.headers.location;
+        })
+        .then(() => chai.request(app).get(returnedUri))
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res.body.title).to.equal(fixture.title);
+          expect(res.body.content).to.equal(fixture.content);
+        });
+    });
+  });
 });
