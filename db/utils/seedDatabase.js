@@ -8,7 +8,7 @@ const { MONGODB_URI, MONGODB_OPTIONS } = require('../../config');
 const Folder = require('../../models/Folder');
 const folders = require('../seed/folders');
 const Note = require('../../models/Note');
-const { notes } = require('../seed/notes');
+const notes = require('../seed/notes');
 
 
 mongoose

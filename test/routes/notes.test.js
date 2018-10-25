@@ -5,7 +5,7 @@ const chaiHttp = require('chai-http');
 
 const app = require('../../server');
 const Note = require('../../models/Note');
-const notesData = require('../../db/seed/notes').notes;
+const notesData = require('../../db/seed/notes');
 const utils = require('../utils');
 
 const { expect } = chai;

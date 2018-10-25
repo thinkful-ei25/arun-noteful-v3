@@ -10,7 +10,7 @@ const utils = require('../utils');
 describe('Notes interface', () => {
   before(() => utils.connectToDatabase());
 
-  beforeEach(() => Note.insertMany(notesData.notes));
+  beforeEach(() => Note.insertMany(notesData));
 
   afterEach(() => utils.clearDatabase());
 
@@ -27,7 +27,7 @@ describe('Notes interface', () => {
 
     context('with a valid `searchTerm`', () => {
       it('should return notes with `searchTerm` in the title', function () {
-        const expectedTitles = [notesData.notes[2].title, notesData.notes[4].title];
+        const expectedTitles = [notesData[2].title, notesData[4].title];
         return notes.filter("you'll").then((results) => {
           expect(results).to.have.length(2);
           expect(results.map(note => note.title)).to.have.members(expectedTitles);
@@ -35,7 +35,7 @@ describe('Notes interface', () => {
       });
 
       it('should return notes with `searchTerm` in the contents', function () {
-        const expectedTitles = [0, 2, 4, 6].map(index => notesData.notes[index].title);
+        const expectedTitles = [0, 2, 4, 6].map(index => notesData[index].title);
         return notes.filter('lorem').then((results) => {
           expect(results).to.have.length(4);
           expect(results.map(note => note.title)).to.have.members(expectedTitles);
