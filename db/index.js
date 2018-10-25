@@ -25,6 +25,18 @@ function returnNullOnCastError(err) {
   return Promise.reject(err);
 }
 
+function handleMongoDuplicationError(err, folder) {
+  if (err.code === 11000 && err.name === 'MongoError') {
+    return Promise.reject(
+      new ItemAlreadyExistsError(
+        `Cannot create new folder as \`name\` of ${folder.name} already exists`,
+        err,
+      ),
+    );
+  }
+  return Promise.reject(err);
+}
+
 const notes = {
   filter(searchTerm) {
     const filter = {};
@@ -66,17 +78,15 @@ const folders = {
   },
 
   create(folder) {
-    return Folder.create(folder).catch((err) => {
-      if (err.code === 11000 && err.name === 'MongoError') {
-        return Promise.reject(
-          new ItemAlreadyExistsError(
-            `Cannot create new folder as \`name\` of ${folder.name} already exists`,
-            err,
-          ),
-        );
-      }
-      return Promise.reject(err);
-    });
+    return Folder.create(folder).catch(err => handleMongoDuplicationError(err, folder));
+  },
+
+  update(id, newFolder) {
+    // prettier-ignore
+    return Folder
+      .findByIdAndUpdate(id, newFolder, { new: true })
+      .catch(err => handleMongoDuplicationError(err, newFolder))
+      .catch(returnNullOnCastError);
   },
 
   seed(data) {

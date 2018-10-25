@@ -112,4 +112,75 @@ describe('/api/folders', () => {
         });
     });
   });
+
+  describe('PUT /api/folders/:id', () => {
+    it('should update and return the new folder given a valid request', function () {
+      const fixture = { id: folderSeedData[0]._id, name: 'test' };
+      return chai
+        .request(server)
+        .put(`/api/folders/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.have.all.keys('id', 'createdAt', 'updatedAt', 'name');
+          expect(res.body.name).to.equal(fixture.name);
+
+          return chai.request(server).get(`/api/folders/${res.body.id}`);
+        })
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res.body.name).to.equal(fixture.name);
+        });
+    });
+
+    it('should return 400 code when given an already existing name', function () {
+      const fixture = { id: folderSeedData[0]._id, name: folderSeedData[1].name };
+      return chai
+        .request(server)
+        .put(`/api/folders/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(
+            `Cannot create new folder as \`name\` of ${fixture.name} already exists`,
+          );
+        });
+    });
+
+    it('should return 404 for an invalid id', function () {
+      return chai
+        .request(server)
+        .put('/api/folders/test')
+        .send({ name: 'haha' })
+        .then((res) => {
+          expect(res).to.have.status(404);
+        });
+    });
+
+    it('should return 400 if `name` is missing', function () {
+      const fixture = { id: folderSeedData[0]._id };
+      return chai
+        .request(server)
+        .put(`/api/folders/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('Missing `name` field in request body');
+        });
+    });
+
+    it('should return 400 if `id` in body doesnt match route', function () {
+      const fixture = { id: folderSeedData[0]._id, name: 'test' };
+      const pathId = folderSeedData[1]._id;
+      return chai
+        .request(server)
+        .put(`/api/folders/${pathId}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`id` in request body does not match path');
+        });
+    });
+  });
 });

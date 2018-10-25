@@ -83,4 +83,51 @@ describe('Folders interface', () => {
       return expect(createPromise).to.be.rejectedWith(ItemAlreadyExistsError);
     });
   });
+
+  describe('update', () => {
+    it('should persist and return the newly updated note', function () {
+      const fixture = { name: 'test test' };
+      let original;
+      return Folder.findOne()
+        .then((folder) => {
+          original = folder;
+        })
+        .then(() => folders.update(original._id, fixture))
+        .then((result) => {
+          expect(result.toObject()).to.include.keys(
+            '_id',
+            'createdAt',
+            'updatedAt',
+            'name',
+          );
+          expect(result.name).to.equal(fixture.name);
+        })
+        .then(() => Folder.findById(original._id))
+        .then((result) => {
+          expect(result.name).to.equal(fixture.name);
+          expect(result.updatedAt).to.be.greaterThan(original.updatedAt);
+          expect(result.createdAt.getTime()).to.equal(original.createdAt.getTime());
+        });
+    });
+
+    // eslint-disable-next-line max-len
+    it('should throw an `ItemAlreadyExistsError` if the name already exists', function () {
+      const updatePromise = Folder.findOne().then((folder) => {
+        let fixture = folderSeedData[2];
+        if (folder._id === fixture.id) {
+          fixture = folderSeedData[0]; // eslint-disable-line prefer-destructuring
+        }
+
+        return folders.update(folder._id, { name: fixture.name });
+      });
+      return expect(updatePromise).to.be.rejectedWith(ItemAlreadyExistsError);
+    });
+
+    it('should return null if the `id` is not found', function () {
+      return folders.update('test', { name: 'test' })
+        .then((result) => {
+          expect(result).to.be.null;
+        });
+    });
+  });
 });
