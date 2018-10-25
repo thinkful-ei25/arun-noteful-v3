@@ -89,6 +89,10 @@ const folders = {
       .catch(returnNullOnCastError);
   },
 
+  delete(id) {
+    return Folder.findByIdAndDelete(id).catch(returnNullOnCastError);
+  },
+
   seed(data) {
     return Promise.all([Folder.insertMany(data), Folder.createIndexes()]);
   },

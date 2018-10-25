@@ -183,4 +183,31 @@ describe('/api/folders', () => {
         });
     });
   });
+
+  describe('DELETE /api/folders', () => {
+    const fixtureUrl = `/api/folders/${folderSeedData[0]._id}`;
+
+    it('should delete a folder with a valid id', function () {
+      return chai
+        .request(server)
+        .delete(fixtureUrl)
+        .then(() => chai.request(server).get(fixtureUrl))
+        .then((res) => {
+          expect(res).to.have.status(404);
+        });
+    });
+
+    it('should return 204 and be idempotent', function () {
+      return chai
+        .request(server)
+        .delete(fixtureUrl)
+        .then((res) => {
+          expect(res).to.have.status(204);
+        })
+        .then(() => chai.request(server).delete(fixtureUrl))
+        .then((res) => {
+          expect(res).to.have.status(204);
+        });
+    });
+  });
 });

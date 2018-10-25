@@ -130,4 +130,22 @@ describe('Folders interface', () => {
         });
     });
   });
+
+  describe('delete', () => {
+    it('with a valid id, it should remove the folder', function () {
+      const fixtureId = folderSeedData[0]._id;
+      return folders.delete(fixtureId)
+        .then(() => Folder.findById(fixtureId))
+        .then((result) => {
+          expect(result).to.be.null;
+        });
+    });
+
+    it('should return null if given an invalid id', function () {
+      return folders.delete('haha')
+        .then((result) => {
+          expect(result).to.be.null;
+        });
+    });
+  });
 });
