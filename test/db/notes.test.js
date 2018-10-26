@@ -70,6 +70,24 @@ describe('Notes interface', () => {
         });
       });
     });
+
+    it('should filter results without a given tagId', function () {
+      const tagIdFixture = '222222222222222222222201';
+      const expected = notesData.filter(note => note.tags.includes(tagIdFixture));
+      return notes.filter(null, null, tagIdFixture).then((results) => {
+        expect(results).to.have.lengthOf(expected.length);
+        expect(results.map(r => r._id.toString())).to.have.members(
+          expected.map(r => r._id),
+        );
+      });
+    });
+
+    it('should return null if tagId is invalid', function () {
+      return notes.filter(null, null, 'hahaha')
+        .then((results) => {
+          expect(results).to.be.null;
+        });
+    });
   });
 
   describe('find', () => {

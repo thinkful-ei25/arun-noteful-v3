@@ -39,7 +39,7 @@ function handleMongoDuplicationError(err, item) {
 }
 
 const notes = {
-  filter(searchTerm, folderId) {
+  filter(searchTerm, folderId, tagId) {
     const filter = {};
     if (searchTerm) {
       const compiledSearch = new RegExp(searchTerm, 'i');
@@ -50,11 +50,18 @@ const notes = {
       filter.folderId = folderId;
     }
 
-    return Note.find(filter).sort({ updatedAt: 'desc' });
+    if (tagId) {
+      filter.tags = tagId;
+    }
+
+    return Note.find(filter)
+      .populate('tags')
+      .sort({ updatedAt: 'desc' })
+      .catch(returnNullOnCastError);
   },
 
   find(id) {
-    return Note.findById(id).catch(returnNullOnCastError);
+    return Note.findById(id).populate('tags').catch(returnNullOnCastError);
   },
 
   create(note) {

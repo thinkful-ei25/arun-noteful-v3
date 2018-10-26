@@ -3,9 +3,11 @@
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
+const { tags } = require('../../db');
 const app = require('../../server');
 const Note = require('../../models/Note');
 const notesData = require('../../db/seed/notes');
+const tagsData = require('../../db/seed/tags');
 const utils = require('../utils');
 
 const { expect } = chai;
@@ -13,7 +15,7 @@ chai.use(chaiHttp);
 
 describe('/api/notes', () => {
   before(() => utils.connectToDatabase());
-  beforeEach(() => Note.insertMany(notesData));
+  beforeEach(() => Note.insertMany(notesData).then(() => tags.seed(tagsData)));
   afterEach(() => utils.clearDatabase());
   after(() => utils.disconnectFromDatabase());
 
@@ -37,7 +39,12 @@ describe('/api/notes', () => {
               'createdAt',
               'updatedAt',
               'folderId',
+              'tags',
             );
+            expect(note.tags).to.not.be.empty;
+            note.tags.forEach((tag) => {
+              expect(tag).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
+            });
           });
         });
     });
@@ -68,7 +75,13 @@ describe('/api/notes', () => {
             expect(res).to.have.status(200);
             expect(res.body).to.have.be.an('array');
             expect(res.body).to.have.lengthOf(expectedResults.length);
-            expect(res.body).to.have.deep.members(expectedResults);
+            // prettier-ignore
+            const simplifiedResults = res.body.map(note => Object.assign(
+              {},
+              note,
+              { tags: note.tags.map(tag => tag.id) },
+            ));
+            expect(simplifiedResults).to.deep.equal(expectedResults);
           })
           .then(() => Note.find({ content: /lorem/i }))
           .then((results) => {
@@ -79,7 +92,6 @@ describe('/api/notes', () => {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body).to.have.lengthOf(expectedResults.length);
-            expect(res.body).to.have.deep.members(expectedResults);
           });
       });
 
@@ -111,6 +123,19 @@ describe('/api/notes', () => {
           });
       });
     });
+
+    it('should only return appropriate notes given a tagId', function () {
+      const tagId = notesData[0].tags[0];
+      const expectedNotes = notesData.filter(note => note.tags.includes(tagId));
+
+      return chai
+        .request(app)
+        .get(`/api/notes?tagId=${tagId}`)
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res.body).to.have.length(expectedNotes.length);
+        });
+    });
   });
 
   describe('GET /api/:id', () => {
@@ -125,7 +150,16 @@ describe('/api/notes', () => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body).to.be.an('object');
-          expect(res.body).to.deep.equal(noteFixture);
+          // prettier-ignore
+          const simplifiedResponse = Object.assign(
+            {},
+            res.body,
+            { tags: res.body.tags.map(tag => tag.id) },
+          );
+          expect(simplifiedResponse).to.deep.equal(noteFixture);
+          res.body.tags.forEach((tag) => {
+            expect(tag).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
+          });
         });
     });
 
