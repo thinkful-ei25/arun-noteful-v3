@@ -20,4 +20,31 @@ describe('Tags interaface', () => {
       });
     });
   });
+
+  describe('find', () => {
+    it('should return only the tag with the given id', function () {
+      const fixture = tagSeedData[0];
+      return tags.find(fixture._id).then((result) => {
+        expect(result.toObject()).to.have.all.keys(
+          'name',
+          '_id',
+          '__v',
+          'createdAt',
+          'updatedAt',
+        );
+        expect(result.name).to.equal(fixture.name);
+      });
+    });
+
+    it('should return null given an invalid id', function () {
+      return Promise.all([
+        tags.find('222222222222222222222213'),
+        tags.find('hahaha'),
+      ]).then((results) => {
+        results.forEach((result) => {
+          expect(result).to.be.null;
+        });
+      });
+    });
+  });
 });

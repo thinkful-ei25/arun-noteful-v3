@@ -125,6 +125,10 @@ const tags = {
     return Tag.find();
   },
 
+  find(id) {
+    return Tag.findById(id).catch(returnNullOnCastError);
+  },
+
   seed(data) {
     return Promise.all([Tag.insertMany(data), Tag.createIndexes()]);
   },
