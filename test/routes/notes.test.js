@@ -5,7 +5,7 @@ const chaiHttp = require('chai-http');
 
 const app = require('../../server');
 const Note = require('../../models/Note');
-const notesData = require('../../db/seed/notes').notes;
+const notesData = require('../../db/seed/notes');
 const utils = require('../utils');
 
 const { expect } = chai;
@@ -31,7 +31,13 @@ describe('/api/notes', () => {
           expect(res.body).to.be.an('array');
           expect(res.body).to.have.length(notesCount);
           res.body.forEach((note) => {
-            expect(note).to.include.keys('title', 'id', 'createdAt', 'updatedAt');
+            expect(note).to.include.keys(
+              'title',
+              'id',
+              'createdAt',
+              'updatedAt',
+              'folderId',
+            );
           });
         });
     });
@@ -85,6 +91,23 @@ describe('/api/notes', () => {
             expect(res).to.have.status(200);
             expect(res.body).to.be.an('array');
             expect(res.body).to.be.empty;
+          });
+      });
+    });
+
+    context('with folderId', () => {
+      it('should return only notes with that folderId', function () {
+        const folderIdFixture = notesData[0].folderId;
+        const expectedNotes = notesData.filter(
+          note => note.folderId === folderIdFixture,
+        );
+
+        return chai
+          .request(app)
+          .get(`/api/notes?folderId=${folderIdFixture}`)
+          .then((res) => {
+            expect(res).to.have.status(200);
+            expect(res.body).to.have.length(expectedNotes.length);
           });
       });
     });
@@ -149,7 +172,11 @@ describe('/api/notes', () => {
   });
 
   describe('POST /api/notes', () => {
-    const fixture = { title: 'My title', content: 'My content has content' };
+    const fixture = {
+      title: 'My title',
+      content: 'My content has content',
+      folderId: '000000000000000000000003',
+    };
 
     it('should return the new note with a location reference', function () {
       return chai
@@ -163,6 +190,7 @@ describe('/api/notes', () => {
           expect(res.body).to.be.an('object');
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
+          expect(res.body.folderId).to.equal(fixture.folderId);
         });
     });
 
@@ -180,6 +208,18 @@ describe('/api/notes', () => {
           expect(res).to.have.status(200);
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
+        });
+    });
+
+    it('should return a 400 error if folderId is an invalid ObjectId', function () {
+      const invalidFixture = Object.assign({}, fixture, { folderId: 'test' });
+      return chai
+        .request(app)
+        .post('/api/notes')
+        .send(invalidFixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`folderId` must be a valid ObjectId');
         });
     });
   });
@@ -207,7 +247,10 @@ describe('/api/notes', () => {
             content: fixture.content,
             id: result.id,
           };
-          return chai.request(app).put(`/api/notes/${result.id}`).send(updateObj);
+          return chai
+            .request(app)
+            .put(`/api/notes/${result.id}`)
+            .send(updateObj);
         })
         .then((res) => {
           expect(res).to.have.status(400);
@@ -220,13 +263,33 @@ describe('/api/notes', () => {
       return Note.findOne()
         .then((testSubject) => {
           const updateObj = Object.assign({}, fixture, { id: testSubject.id });
-          return chai.request(app).put(`/api/notes/${updateObj.id}`).send(updateObj);
+          return chai
+            .request(app)
+            .put(`/api/notes/${updateObj.id}`)
+            .send(updateObj);
         })
         .then((res) => {
           expect(res).to.have.status(200);
           expect(res).to.be.json;
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
+          expect(res.body.folderId).to.be.null;
+        });
+    });
+
+    it('should return 400 if the folderId is not a valid ObjectId', function () {
+      const updateObj = Object.assign({}, fixture, { folderId: 'happy' });
+      return Note.findOne()
+        .then((result) => {
+          updateObj.id = result.id;
+          return chai
+            .request(app)
+            .put(`/api/notes/${updateObj.id}`)
+            .send(updateObj);
+        })
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`folderId` must be a valid ObjectId');
         });
     });
   });

@@ -18,4 +18,11 @@ module.exports = {
   disconnectFromDatabase() {
     return mongoose.disconnect();
   },
+
+  jsonify(object) {
+    const jsonified = object.toJSON();
+    jsonified.createdAt = object.createdAt.toJSON();
+    jsonified.updatedAt = object.updatedAt.toJSON();
+    return jsonified;
+  },
 };
