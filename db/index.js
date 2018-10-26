@@ -139,6 +139,10 @@ const tags = {
       .catch(returnNullOnCastError);
   },
 
+  delete(id) {
+    return Tag.findByIdAndDelete(id).catch(returnNullOnCastError);
+  },
+
   seed(data) {
     return Promise.all([Tag.insertMany(data), Tag.createIndexes()]);
   },

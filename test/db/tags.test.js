@@ -139,4 +139,26 @@ describe('Tags interaface', () => {
       return expect(promise).to.be.rejectedWith(ItemAlreadyExistsError);
     });
   });
+
+  describe('delete', () => {
+    it('should delete the tag from the database', function () {
+      const fixtureId = tagSeedData[0]._id;
+      return tags.delete(fixtureId)
+        .then(() => Tag.findById(fixtureId))
+        .then((result) => {
+          expect(result).to.not.exist;
+        });
+    });
+
+    it('should not throw when given a tag that is invalid', function () {
+      return tags.delete('haha')
+        .then((result) => {
+          expect(result).to.not.exist;
+        });
+    });
+
+    context('with associated notes', () => {
+      it('should remove the tag from previously associated notes');
+    });
+  });
 });
