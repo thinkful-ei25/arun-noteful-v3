@@ -9,7 +9,8 @@
 	"main": "server.js",
 	"scripts": {
 		"start": "node server.js",
-		"test": "cross-env NODE_ENV=test mocha \"./test/**/*.test.js\"",
+		"test": "cross-env NODE_ENV=test nyc -r lcov mocha \"./test/**/*.test.js\"",
+    "coverage": "nyc report",
 		"dev": "nodemon server.js",
 		"seed-db": "node db/utils/seedDatabase"
 	},
@@ -28,6 +29,7 @@
 		"eslint-plugin-import": "2.14.0",
 		"mocha": "^5.2.0",
 		"nodemon": "^1.18.4",
+		"nyc": "^13.1.0",
 		"prettier": "^1.14.3",
 		"prettier-eslint": "^8.8.2"
 	}
