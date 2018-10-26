@@ -93,4 +93,50 @@ describe('Tags interaface', () => {
       return expect(promise).to.be.rejectedWith(ItemAlreadyExistsError);
     });
   });
+
+  describe('update', () => {
+    it('should persist the update to the database and return the new tag', function () {
+      const fixture = tagSeedData[0];
+      const update = { name: 'Rabbits > cats' };
+      let original;
+
+      return Tag.findById(fixture._id)
+        .then((result) => {
+          original = result;
+        })
+        .then(() => tags.update(fixture._id, update))
+        .then((result) => {
+          expect(result.toObject()).to.have.all.keys(
+            '_id',
+            '__v',
+            'createdAt',
+            'updatedAt',
+            'name',
+          );
+          expect(result.name).to.equal(update.name);
+
+          return Tag.findById(fixture._id);
+        })
+        .then((result) => {
+          expect(result).to.exist;
+          expect(result.name).to.equal(update.name);
+          expect(result.createdAt.getTime()).to.equal(original.createdAt.getTime());
+          expect(result.updatedAt).to.be.greaterThan(original.updatedAt);
+        });
+    });
+
+    it('should return null if the original tag is not found', function () {
+      return tags.update('haha', { name: 'haha' })
+        .then((result) => {
+          expect(result).to.be.null;
+        });
+    });
+
+    // eslint-disable-next-line max-len
+    it('should throw an `ItemAlreadyExistsError` if the name is already in use', function () {
+      const fixture = { id: tagSeedData[0]._id, name: tagSeedData[1].name };
+      const promise = tags.update(fixture.id, { name: fixture.name });
+      return expect(promise).to.be.rejectedWith(ItemAlreadyExistsError);
+    });
+  });
 });

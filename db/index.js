@@ -133,6 +133,12 @@ const tags = {
     return Tag.create(tag).catch(err => handleMongoDuplicationError(err, tag));
   },
 
+  update(id, tag) {
+    return Tag.findByIdAndUpdate(id, tag, { new: true })
+      .catch(err => handleMongoDuplicationError(err, tag))
+      .catch(returnNullOnCastError);
+  },
+
   seed(data) {
     return Promise.all([Tag.insertMany(data), Tag.createIndexes()]);
   },
