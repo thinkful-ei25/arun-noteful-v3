@@ -122,4 +122,95 @@ describe('/api/tags', () => {
         });
     });
   });
+
+  describe('PUT /api/tags/:id', () => {
+    const baseUrl = '/api/tags';
+
+    it('should update persist and return all changes to a tag', function () {
+      const fixture = { id: tagSeedData[0]._id, name: 'my new name' };
+
+      return chai
+        .request(server)
+        .put(`${baseUrl}/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res).to.be.json;
+          expect(res.body).to.have.all.keys('id', 'name', 'createdAt', 'updatedAt');
+          expect(res.body.name).to.equal(fixture.name);
+          return chai.request(server).get(`${baseUrl}/${fixture.id}`);
+        })
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res.body.name).to.equal(fixture.name);
+        });
+    });
+
+    it('should return 404 if `id` does not exist', function () {
+      const fixture = { id: '222222222222222222222213', name: 'haha' };
+
+      return chai
+        .request(server)
+        .put(`${baseUrl}/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(404);
+        });
+    });
+
+    it('should return error 400 if `name` is missing', function () {
+      const fixture = { id: tagSeedData[0]._id };
+
+      return chai
+        .request(server)
+        .put(`${baseUrl}/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`name` field is required in request body');
+        });
+    });
+
+    it('should return error 400 if `name` is already in use', function () {
+      const fixture = { id: tagSeedData[0]._id, name: tagSeedData[1].name };
+
+      return chai
+        .request(server)
+        .put(`${baseUrl}/${fixture.id}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(
+            `Cannot create item as \`name\` of ${fixture.name} already exists`,
+          );
+        });
+    });
+
+    it('should return error 400 if `id` is not an ObjectId', function () {
+      return chai
+        .request(server)
+        .put(`${baseUrl}/haha`)
+        .send({ name: 'haha' })
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`id` must be a valid ObjectId');
+        });
+    });
+
+    // eslint-disable-next-line max-len
+    it('should return error 400 if `id` does not match in params and body', function () {
+      const fixture = { id: tagSeedData[0]._id, name: 'haha' };
+      const fixtureId = tagSeedData[1]._id;
+      return chai
+        .request(server)
+        .put(`${baseUrl}/${fixtureId}`)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(
+            '`id` must match in route parameter and request body',
+          );
+        });
+    });
+  });
 });

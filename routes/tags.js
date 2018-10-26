@@ -9,9 +9,17 @@ const router = express.Router();
 
 function rejectInvalidIds(req, res, next) {
   const idParam = req.params.id;
+  const idBody = req.body.id;
 
   if (idParam && !mongoose.Types.ObjectId.isValid(idParam)) {
     const err = new Error('`id` must be a valid ObjectId');
+    err.status = 400;
+    next(err);
+    return;
+  }
+
+  if (idBody && idBody !== idParam) {
+    const err = new Error('`id` must match in route parameter and request body');
     err.status = 400;
     next(err);
     return;
@@ -65,18 +73,45 @@ router.get('/:id', rejectInvalidIds, (req, res, next) => {
     .catch(next);
 });
 
-router.post('/', buildTagFromBody, (req, res, next) => {
-  const { tag } = req;
+router.post(
+  '/',
+  buildTagFromBody,
+  (req, res, next) => {
+    const { tag } = req;
 
-  tags
-    .create(tag)
-    .then((result) => {
-      res
-        .status(201)
-        .location(`${req.baseUrl}/${result._id}`)
-        .json(result);
-    })
-    .catch(next);
-}, handleItemExistsError);
+    tags
+      .create(tag)
+      .then((result) => {
+        res
+          .status(201)
+          .location(`${req.baseUrl}/${result._id}`)
+          .json(result);
+      })
+      .catch(next);
+  },
+  handleItemExistsError,
+);
+
+router.put(
+  '/:id',
+  buildTagFromBody,
+  rejectInvalidIds,
+  (req, res, next) => {
+    const { id } = req.params;
+    const { tag } = req;
+
+    tags
+      .update(id, tag)
+      .then((result) => {
+        if (!result) {
+          next();
+          return;
+        }
+        res.json(result);
+      })
+      .catch(next);
+  },
+  handleItemExistsError,
+);
 
 module.exports = router;
