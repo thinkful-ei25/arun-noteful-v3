@@ -210,6 +210,7 @@ describe('/api/notes', () => {
       title: 'My title',
       content: 'My content has content',
       folderId: '000000000000000000000003',
+      tags: ['222222222222222222222201'],
     };
 
     it('should return the new note with a location reference', function () {
@@ -225,6 +226,7 @@ describe('/api/notes', () => {
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
           expect(res.body.folderId).to.equal(fixture.folderId);
+          expect(res.body.tags).to.have.all.members(fixture.tags);
         });
     });
 
