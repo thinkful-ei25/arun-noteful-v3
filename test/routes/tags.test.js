@@ -70,4 +70,56 @@ describe('/api/tags', () => {
         });
     });
   });
+
+  describe('POST /', () => {
+    const url = '/api/tags/';
+
+    // eslint-disable-next-line max-len
+    it('should return a new tag with appropriate location header given a valid name', function () {
+      const fixture = { name: 'my favorite tag' };
+      return chai
+        .request(server)
+        .post(url)
+        .send(fixture)
+        .then((res) => {
+          expect(res).to.have.status(201);
+          expect(res).to.be.json;
+          expect(res.headers).to.include.all.keys('location');
+          expect(res.body).to.be.an('object');
+          expect(res.body).to.have.all.keys('id', 'name', 'updatedAt', 'createdAt');
+          expect(res.body.name).to.equal(fixture.name);
+
+          return chai.request(server).get(res.headers.location);
+        })
+        .then((res) => {
+          expect(res).to.have.status(200);
+          expect(res.body.name).to.equal(fixture.name);
+        });
+    });
+
+    it('should return error 400 if the name field is missing', function () {
+      return chai
+        .request(server)
+        .post(url)
+        .send({})
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('`name` field is required in request body');
+        });
+    });
+
+    it('should return error 400 if the name is a duplicate', function () {
+      const fixture = tagSeedData[0];
+      return chai
+        .request(server)
+        .post(url)
+        .send({ name: fixture.name })
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal(
+            `Cannot create item as \`name\` of ${fixture.name} already exists`,
+          );
+        });
+    });
+  });
 });
