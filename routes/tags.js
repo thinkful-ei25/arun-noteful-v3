@@ -114,4 +114,12 @@ router.put(
   handleItemExistsError,
 );
 
+router.delete('/:id', (req, res, next) => {
+  const { id } = req.params;
+
+  tags.delete(id)
+    .then(() => res.sendStatus(204))
+    .catch(next);
+});
+
 module.exports = router;

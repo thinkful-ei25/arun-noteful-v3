@@ -213,4 +213,38 @@ describe('/api/tags', () => {
         });
     });
   });
+
+  describe('DELETE /api/tags/:id', function () {
+    const baseUrl = '/api/tags';
+
+    it('should delete the given tag', function () {
+      const fixtureId = tagSeedData[0]._id;
+      const url = `${baseUrl}/${fixtureId}`;
+      return chai
+        .request(server)
+        .delete(url)
+        .then(() => chai.request(server).get(url))
+        .then((res) => {
+          expect(res).to.have.status(404);
+        });
+    });
+
+    it('should idempotently return status 204', function () {
+      const url = `${baseUrl}/${tagSeedData[0]._id}`;
+      return chai
+        .request(server)
+        .delete(url)
+        .then((res) => {
+          expect(res).to.have.status(204);
+        })
+        .then(() => chai.request(server).delete(url))
+        .then((res) => {
+          expect(res).to.have.status(204);
+        })
+        .then(() => chai.request(server).delete(`${baseUrl}/hahahah`))
+        .then((res) => {
+          expect(res).to.have.status(204);
+        });
+    });
+  });
 });

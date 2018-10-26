@@ -102,15 +102,7 @@ const folders = {
   },
 
   delete(id) {
-    return notes
-      .filter(null, id)
-      .then((notesToBeProcessed) => {
-        // prettier-ignore
-        const notePromises = notesToBeProcessed.map(
-          note => note.updateOne({ $unset: { folderId: '' } }),
-        );
-        return Promise.all(notePromises);
-      })
+    return Note.updateMany({ folderId: id }, { $unset: { folderId: 1 } })
       .then(() => Folder.findByIdAndDelete(id))
       .catch(returnNullOnCastError);
   },
