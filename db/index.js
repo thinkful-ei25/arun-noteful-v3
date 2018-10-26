@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const Folder = require('../models/Folder');
 const Note = require('../models/Note');
+const Tag = require('../models/Tag');
 
 const { CastError } = mongoose;
 
@@ -119,4 +120,19 @@ const folders = {
   },
 };
 
-module.exports = { folders, ItemAlreadyExistsError, notes };
+const tags = {
+  fetch() {
+    return Tag.find();
+  },
+
+  seed(data) {
+    return Promise.all([Tag.insertMany(data), Tag.createIndexes()]);
+  },
+};
+
+module.exports = {
+  folders,
+  ItemAlreadyExistsError,
+  notes,
+  tags,
+};
