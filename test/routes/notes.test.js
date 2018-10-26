@@ -264,6 +264,7 @@ describe('/api/notes', () => {
     const fixture = {
       title: 'Rabbit > Cats',
       content: 'Lorem ipsum dolor',
+      tags: ['222222222222222222222202'],
     };
 
     it('should return 404 if `id` is invalid', function () {
@@ -309,7 +310,7 @@ describe('/api/notes', () => {
           expect(res).to.be.json;
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
-          expect(res.body.folderId).to.be.null;
+          expect(res.body.folderId).to.be.undefined;
         });
     });
 

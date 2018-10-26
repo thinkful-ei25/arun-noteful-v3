@@ -74,9 +74,23 @@ const notes = {
 
   update(id, newNote) {
     const update = Object.assign(
-      { title: undefined, content: undefined, folderId: undefined },
+      {
+        title: null, content: null, folderId: null, tags: null,
+      },
       newNote,
     );
+
+    const unset = Object.keys(update)
+      .filter(key => !update[key])
+      .reduce((acc, key) => {
+        acc[key] = 1;
+        return acc;
+      }, {});
+    Object.keys(unset).forEach(key => delete update[key]);
+
+    if (Object.keys(unset).length > 0) {
+      update.$unset = unset;
+    }
     return Note.findByIdAndUpdate(id, update, { new: true }).catch(
       returnNullOnCastError,
     );
