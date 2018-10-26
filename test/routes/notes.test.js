@@ -311,6 +311,7 @@ describe('/api/notes', () => {
           expect(res.body.title).to.equal(fixture.title);
           expect(res.body.content).to.equal(fixture.content);
           expect(res.body.folderId).to.be.undefined;
+          expect(res.body.tags).to.deep.equal(fixture.tags);
         });
     });
 
@@ -327,6 +328,26 @@ describe('/api/notes', () => {
         .then((res) => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal('`folderId` must be a valid ObjectId');
+        });
+    });
+
+    it('should return 400 if any tagIds are invalid', function () {
+      const updateObj = Object.assign({}, fixture, {
+        tags: ['222222222222222222222202', 'HAHA'],
+      });
+
+      return Note.findOne()
+        .then((result) => {
+          updateObj.id = result.id;
+
+          return chai
+            .request(app)
+            .put(`/api/notes/${updateObj.id}`)
+            .send(updateObj);
+        })
+        .then((res) => {
+          expect(res).to.have.status(400);
+          expect(res.body.message).to.equal('All `tags` must be valid ObjectIds');
         });
     });
   });

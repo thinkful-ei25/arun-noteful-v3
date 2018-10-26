@@ -26,7 +26,7 @@ function buildNote(req, res, next) {
 }
 
 function validateIds(req, res, next) {
-  const { id, folderId } = req.note;
+  const { id, folderId, tags } = req.note;
   const paramId = req.params.id;
 
   if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
@@ -38,6 +38,13 @@ function validateIds(req, res, next) {
 
   if (paramId && id && paramId !== id) {
     const err = new Error('`id` in body does not match requested resource');
+    err.status = 400;
+    next(err);
+    return;
+  }
+
+  if (tags && tags.some(tag => !mongoose.Types.ObjectId.isValid(tag))) {
+    const err = new Error('All `tags` must be valid ObjectIds');
     err.status = 400;
     next(err);
     return;
