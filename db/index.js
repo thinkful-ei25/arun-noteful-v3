@@ -73,6 +73,10 @@ const notes = {
       returnNullOnCastError,
     );
   },
+
+  seed(data) {
+    return Note.insertMany(data);
+  },
 };
 
 const folders = {
@@ -97,7 +101,17 @@ const folders = {
   },
 
   delete(id) {
-    return Folder.findByIdAndDelete(id).catch(returnNullOnCastError);
+    return notes
+      .filter(null, id)
+      .then((notesToBeProcessed) => {
+        // prettier-ignore
+        const notePromises = notesToBeProcessed.map(
+          note => note.updateOne({ $unset: { folderId: '' } }),
+        );
+        return Promise.all(notePromises);
+      })
+      .then(() => Folder.findByIdAndDelete(id))
+      .catch(returnNullOnCastError);
   },
 
   seed(data) {

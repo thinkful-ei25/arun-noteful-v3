@@ -5,8 +5,10 @@ const chaiAsPromised = require('chai-as-promised');
 
 const Folder = require('../../models/Folder');
 const folderSeedData = require('../../db/seed/folders');
+const Note = require('../../models/Note');
+const noteSeedData = require('../../db/seed/notes');
 const utils = require('../utils');
-const { folders, ItemAlreadyExistsError } = require('../../db');
+const { folders, ItemAlreadyExistsError, notes } = require('../../db');
 
 chai.use(chaiAsPromised);
 const { expect } = chai;
@@ -15,7 +17,6 @@ describe('Folders interface', () => {
   before(() => utils.connectToDatabase());
   after(() => utils.disconnectFromDatabase());
 
-  // prettier-ignore
   beforeEach(() => folders.seed(folderSeedData));
   afterEach(() => utils.clearDatabase());
 
@@ -124,17 +125,17 @@ describe('Folders interface', () => {
     });
 
     it('should return null if the `id` is not found', function () {
-      return folders.update('test', { name: 'test' })
-        .then((result) => {
-          expect(result).to.be.null;
-        });
+      return folders.update('test', { name: 'test' }).then((result) => {
+        expect(result).to.be.null;
+      });
     });
   });
 
   describe('delete', () => {
     it('with a valid id, it should remove the folder', function () {
       const fixtureId = folderSeedData[0]._id;
-      return folders.delete(fixtureId)
+      return folders
+        .delete(fixtureId)
         .then(() => Folder.findById(fixtureId))
         .then((result) => {
           expect(result).to.be.null;
@@ -142,10 +143,37 @@ describe('Folders interface', () => {
     });
 
     it('should return null if given an invalid id', function () {
-      return folders.delete('haha')
-        .then((result) => {
-          expect(result).to.be.null;
-        });
+      return folders.delete('haha').then((result) => {
+        expect(result).to.be.null;
+      });
+    });
+
+    context('with notes', () => {
+      beforeEach(() => notes.seed(noteSeedData));
+
+      it('should unset all notes with that folderId', function () {
+        const folderIdFixture = folderSeedData[0]._id;
+        let notesInFolderFixture;
+
+        return notes
+          .filter(null, folderIdFixture)
+          .then((results) => {
+            notesInFolderFixture = results;
+          })
+          .then(() => folders.delete(folderIdFixture))
+          .then(() => {
+            // prettier-ignore
+            const fetchPromises = notesInFolderFixture.map(
+              note => Note.findById(note._id),
+            );
+            return Promise.all(fetchPromises);
+          })
+          .then((notesToBeChecked) => {
+            notesToBeChecked.forEach((note) => {
+              expect(note.folderId).to.not.exist;
+            });
+          });
+      });
     });
   });
 });
