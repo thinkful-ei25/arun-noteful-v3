@@ -10,6 +10,7 @@
 	"scripts": {
 		"start": "node server.js",
 		"test": "cross-env NODE_ENV=test nyc -r lcov mocha \"./test/**/*.test.js\"",
+		"test-single": "cross-env NODE_ENV=test mocha",
     "coverage": "nyc report",
 		"dev": "nodemon server.js",
 		"seed-db": "node db/utils/seedDatabase"
