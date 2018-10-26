@@ -107,7 +107,7 @@ describe('/api/folders', () => {
         .then((res) => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal(
-            `Cannot create new folder as \`name\` of ${existingName} already exists`,
+            `Cannot create item as \`name\` of ${existingName} already exists`,
           );
         });
     });
@@ -143,7 +143,7 @@ describe('/api/folders', () => {
         .then((res) => {
           expect(res).to.have.status(400);
           expect(res.body.message).to.equal(
-            `Cannot create new folder as \`name\` of ${fixture.name} already exists`,
+            `Cannot create item as \`name\` of ${fixture.name} already exists`,
           );
         });
     });

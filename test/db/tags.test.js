@@ -1,10 +1,15 @@
 'use strict';
 
-const { expect } = require('chai');
+const chai = require('chai');
+const chaiAsPromised = require('chai-as-promised');
 
-const { tags } = require('../../db');
+const { ItemAlreadyExistsError, tags } = require('../../db');
+const Tag = require('../../models/Tag');
 const tagSeedData = require('../../db/seed/tags');
 const utils = require('../utils');
+
+const { expect } = chai;
+chai.use(chaiAsPromised);
 
 describe('Tags interaface', () => {
   before(() => utils.connectToDatabase());
@@ -45,6 +50,47 @@ describe('Tags interaface', () => {
           expect(result).to.be.null;
         });
       });
+    });
+  });
+
+  describe('create', () => {
+    const fixture = { name: 'Rabbits > Cats' };
+
+    it('should persist a new tag to the database', function () {
+      return tags
+        .create(fixture)
+        .then(tag => Tag.findById(tag._id))
+        .then((result) => {
+          expect(result.toObject()).to.have.all.keys(
+            'name',
+            '_id',
+            '__v',
+            'createdAt',
+            'updatedAt',
+          );
+          expect(result.name).to.equal(fixture.name);
+        });
+    });
+
+    it('should return the tag', function () {
+      return tags.create(fixture).then((tag) => {
+        expect(tag.toObject()).to.have.all.keys(
+          'name',
+          '_id',
+          '__v',
+          'createdAt',
+          'updatedAt',
+        );
+        expect(tag.name).to.equal(fixture.name);
+        expect(tag.toJSON()).to.have.all.keys('name', 'id', 'createdAt', 'updatedAt');
+      });
+    });
+
+    // eslint-disable-next-line max-len
+    it('should throw an `ItemAlreadyExists` error given an existing tag name', function () {
+      const duplicateFixture = tagSeedData[0];
+      const promise = tags.create({ name: duplicateFixture.name });
+      return expect(promise).to.be.rejectedWith(ItemAlreadyExistsError);
     });
   });
 });

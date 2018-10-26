@@ -26,11 +26,11 @@ function returnNullOnCastError(err) {
   return Promise.reject(err);
 }
 
-function handleMongoDuplicationError(err, folder) {
+function handleMongoDuplicationError(err, item) {
   if (err.code === 11000 && err.name === 'MongoError') {
     return Promise.reject(
       new ItemAlreadyExistsError(
-        `Cannot create new folder as \`name\` of ${folder.name} already exists`,
+        `Cannot create item as \`name\` of ${item.name} already exists`,
         err,
       ),
     );
@@ -127,6 +127,10 @@ const tags = {
 
   find(id) {
     return Tag.findById(id).catch(returnNullOnCastError);
+  },
+
+  create(tag) {
+    return Tag.create(tag).catch(err => handleMongoDuplicationError(err, tag));
   },
 
   seed(data) {
