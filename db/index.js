@@ -75,7 +75,10 @@ const notes = {
   update(id, newNote) {
     const update = Object.assign(
       {
-        title: null, content: null, folderId: null, tags: null,
+        title: null,
+        content: null,
+        folderId: null,
+        tags: null,
       },
       newNote,
     );
@@ -153,7 +156,9 @@ const tags = {
   },
 
   delete(id) {
-    return Tag.findByIdAndDelete(id).catch(returnNullOnCastError);
+    return Note.updateMany({ tags: id }, { $pull: { tags: id } })
+      .then(() => Tag.findByIdAndDelete(id))
+      .catch(returnNullOnCastError);
   },
 
   seed(data) {

@@ -2,8 +2,11 @@
 
 const chai = require('chai');
 const chaiAsPromised = require('chai-as-promised');
+const mongoose = require('mongoose');
 
-const { ItemAlreadyExistsError, tags } = require('../../db');
+const { ItemAlreadyExistsError, notes, tags } = require('../../db');
+const Note = require('../../models/Note');
+const noteSeedData = require('../../db/seed/notes');
 const Tag = require('../../models/Tag');
 const tagSeedData = require('../../db/seed/tags');
 const utils = require('../utils');
@@ -126,10 +129,9 @@ describe('Tags interaface', () => {
     });
 
     it('should return null if the original tag is not found', function () {
-      return tags.update('haha', { name: 'haha' })
-        .then((result) => {
-          expect(result).to.be.null;
-        });
+      return tags.update('haha', { name: 'haha' }).then((result) => {
+        expect(result).to.be.null;
+      });
     });
 
     // eslint-disable-next-line max-len
@@ -143,7 +145,8 @@ describe('Tags interaface', () => {
   describe('delete', () => {
     it('should delete the tag from the database', function () {
       const fixtureId = tagSeedData[0]._id;
-      return tags.delete(fixtureId)
+      return tags
+        .delete(fixtureId)
         .then(() => Tag.findById(fixtureId))
         .then((result) => {
           expect(result).to.not.exist;
@@ -151,14 +154,34 @@ describe('Tags interaface', () => {
     });
 
     it('should not throw when given a tag that is invalid', function () {
-      return tags.delete('haha')
-        .then((result) => {
-          expect(result).to.not.exist;
-        });
+      return tags.delete('haha').then((result) => {
+        expect(result).to.not.exist;
+      });
     });
 
     context('with associated notes', () => {
-      it('should remove the tag from previously associated notes');
+      beforeEach(() => notes.seed(noteSeedData));
+
+      it('should remove the tag from previously associated notes', function () {
+        const fixtureId = tagSeedData[1]._id;
+        let taggedNotes;
+        return Note.find({ tags: fixtureId })
+          .then((results) => {
+            taggedNotes = results;
+          })
+          .then(() => tags.delete(fixtureId))
+          .then(() => {
+            const $in = taggedNotes.map(note => note._id);
+            return Note.find({ _id: { $in } });
+          })
+          .then((results) => {
+            results.forEach((note) => {
+              expect(note.toObject().tags).to.not.deep.include(
+                new mongoose.Types.ObjectId(fixtureId),
+              );
+            });
+          });
+      });
     });
   });
 });
