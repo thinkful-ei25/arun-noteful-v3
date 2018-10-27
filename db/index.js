@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 
 const Folder = require('../models/Folder');
 const Note = require('../models/Note');
+const Tag = require('../models/Tag');
 
 const { CastError } = mongoose;
 
@@ -25,11 +26,11 @@ function returnNullOnCastError(err) {
   return Promise.reject(err);
 }
 
-function handleMongoDuplicationError(err, folder) {
+function handleMongoDuplicationError(err, item) {
   if (err.code === 11000 && err.name === 'MongoError') {
     return Promise.reject(
       new ItemAlreadyExistsError(
-        `Cannot create new folder as \`name\` of ${folder.name} already exists`,
+        `Cannot create item as \`name\` of ${item.name} already exists`,
         err,
       ),
     );
@@ -38,7 +39,7 @@ function handleMongoDuplicationError(err, folder) {
 }
 
 const notes = {
-  filter(searchTerm, folderId) {
+  filter(searchTerm, folderId, tagId) {
     const filter = {};
     if (searchTerm) {
       const compiledSearch = new RegExp(searchTerm, 'i');
@@ -49,11 +50,18 @@ const notes = {
       filter.folderId = folderId;
     }
 
-    return Note.find(filter).sort({ updatedAt: 'desc' });
+    if (tagId) {
+      filter.tags = tagId;
+    }
+
+    return Note.find(filter)
+      .populate('tags')
+      .sort({ updatedAt: 'desc' })
+      .catch(returnNullOnCastError);
   },
 
   find(id) {
-    return Note.findById(id).catch(returnNullOnCastError);
+    return Note.findById(id).populate('tags').catch(returnNullOnCastError);
   },
 
   create(note) {
@@ -66,9 +74,26 @@ const notes = {
 
   update(id, newNote) {
     const update = Object.assign(
-      { title: undefined, content: undefined, folderId: undefined },
+      {
+        title: null,
+        content: null,
+        folderId: null,
+        tags: null,
+      },
       newNote,
     );
+
+    const unset = Object.keys(update)
+      .filter(key => !update[key])
+      .reduce((acc, key) => {
+        acc[key] = 1;
+        return acc;
+      }, {});
+    Object.keys(unset).forEach(key => delete update[key]);
+
+    if (Object.keys(unset).length > 0) {
+      update.$unset = unset;
+    }
     return Note.findByIdAndUpdate(id, update, { new: true }).catch(
       returnNullOnCastError,
     );
@@ -101,15 +126,7 @@ const folders = {
   },
 
   delete(id) {
-    return notes
-      .filter(null, id)
-      .then((notesToBeProcessed) => {
-        // prettier-ignore
-        const notePromises = notesToBeProcessed.map(
-          note => note.updateOne({ $unset: { folderId: '' } }),
-        );
-        return Promise.all(notePromises);
-      })
+    return Note.updateMany({ folderId: id }, { $unset: { folderId: 1 } })
       .then(() => Folder.findByIdAndDelete(id))
       .catch(returnNullOnCastError);
   },
@@ -119,4 +136,39 @@ const folders = {
   },
 };
 
-module.exports = { folders, ItemAlreadyExistsError, notes };
+const tags = {
+  fetch() {
+    return Tag.find();
+  },
+
+  find(id) {
+    return Tag.findById(id).catch(returnNullOnCastError);
+  },
+
+  create(tag) {
+    return Tag.create(tag).catch(err => handleMongoDuplicationError(err, tag));
+  },
+
+  update(id, tag) {
+    return Tag.findByIdAndUpdate(id, tag, { new: true })
+      .catch(err => handleMongoDuplicationError(err, tag))
+      .catch(returnNullOnCastError);
+  },
+
+  delete(id) {
+    return Note.updateMany({ tags: id }, { $pull: { tags: id } })
+      .then(() => Tag.findByIdAndDelete(id))
+      .catch(returnNullOnCastError);
+  },
+
+  seed(data) {
+    return Promise.all([Tag.insertMany(data), Tag.createIndexes()]);
+  },
+};
+
+module.exports = {
+  folders,
+  ItemAlreadyExistsError,
+  notes,
+  tags,
+};

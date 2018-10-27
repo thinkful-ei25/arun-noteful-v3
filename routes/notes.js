@@ -7,12 +7,58 @@ const { notes } = require('../db');
 
 const router = express.Router();
 
+function buildNote(req, res, next) {
+  req.note = {};
+  ['content', 'title', 'folderId', 'tags'].forEach((key) => {
+    if (req.body[key]) {
+      req.note[key] = req.body[key];
+    }
+  });
+
+  if (!req.note.title) {
+    const err = new Error('Missing `title` in request body');
+    err.status = 400;
+    next(err);
+    return;
+  }
+
+  next();
+}
+
+function validateIds(req, res, next) {
+  const { id, folderId, tags } = req.note;
+  const paramId = req.params.id;
+
+  if (folderId && !mongoose.Types.ObjectId.isValid(folderId)) {
+    const err = new Error('`folderId` must be a valid ObjectId');
+    err.status = 400;
+    next(err);
+    return;
+  }
+
+  if (paramId && id && paramId !== id) {
+    const err = new Error('`id` in body does not match requested resource');
+    err.status = 400;
+    next(err);
+    return;
+  }
+
+  if (tags && tags.some(tag => !mongoose.Types.ObjectId.isValid(tag))) {
+    const err = new Error('All `tags` must be valid ObjectIds');
+    err.status = 400;
+    next(err);
+    return;
+  }
+
+  next();
+}
+
 /* ========== GET/READ ALL ITEMS ========== */
 router.get('/', (req, res, next) => {
-  const { searchTerm, folderId } = req.query;
+  const { searchTerm, folderId, tagId } = req.query;
 
   notes
-    .filter(searchTerm, folderId)
+    .filter(searchTerm, folderId, tagId)
     .then(results => res.json(results))
     .catch(next);
 });
@@ -35,35 +81,9 @@ router.get('/:id', (req, res, next) => {
 });
 
 /* ========== POST/CREATE AN ITEM ========== */
-router.post('/', (req, res, next) => {
-  const newNote = {};
-  ['content', 'title', 'folderId'].forEach((key) => {
-    if (req.body[key]) {
-      newNote[key] = req.body[key];
-    }
-  });
-
-  if (!newNote.title) {
-    const err = new Error('Missing `title` in request body');
-    err.status = 400;
-    next(err);
-    return;
-  }
-
-  if (newNote.folderId) {
-    try {
-      // eslint-disable-next-line no-unused-vars
-      const folderId = new mongoose.Types.ObjectId(newNote.folderId);
-    } catch (err) {
-      const returnedError = new Error('`folderId` must be a valid ObjectId');
-      returnedError.status = 400;
-      next(returnedError);
-      return;
-    }
-  }
-
+router.post('/', buildNote, validateIds, (req, res, next) => {
   notes
-    .create(newNote)
+    .create(req.note)
     .then((createdNote) => {
       res
         // eslint-disable-next-line no-underscore-dangle
@@ -75,44 +95,11 @@ router.post('/', (req, res, next) => {
 });
 
 /* ========== PUT/UPDATE A SINGLE ITEM ========== */
-router.put('/:id', (req, res, next) => {
+router.put('/:id', buildNote, validateIds, (req, res, next) => {
   const { id } = req.params;
 
-  if (req.body.id && id !== req.body.id) {
-    const err = new Error('`id` in body does not match requested resource');
-    err.status = 400;
-    next(err);
-    return;
-  }
-
-  const updateObj = {};
-  ['title', 'content', 'folderId'].forEach((key) => {
-    if (req.body[key]) {
-      updateObj[key] = req.body[key];
-    }
-  });
-
-  if (!updateObj.title) {
-    const err = new Error('Missing `title` in request body');
-    err.status = 400;
-    next(err);
-    return;
-  }
-
-  if (updateObj.folderId) {
-    try {
-      // eslint-disable-next-line no-unused-vars
-      const oid = new mongoose.Types.ObjectId(updateObj.folderId);
-    } catch (err) {
-      const returnedError = new Error('`folderId` must be a valid ObjectId');
-      returnedError.status = 400;
-      next(returnedError);
-      return;
-    }
-  }
-
   notes
-    .update(id, updateObj)
+    .update(id, req.note)
     .then((result) => {
       if (!result) {
         next();
