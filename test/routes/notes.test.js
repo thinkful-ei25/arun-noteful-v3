@@ -81,7 +81,7 @@ describe('/api/notes', () => {
               note,
               { tags: note.tags.map(tag => tag.id) },
             ));
-            expect(simplifiedResults).to.deep.equal(expectedResults);
+            expect(simplifiedResults).to.have.deep.members(expectedResults);
           })
           .then(() => Note.find({ content: /lorem/i }))
           .then((results) => {
