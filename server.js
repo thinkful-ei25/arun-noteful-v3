@@ -5,11 +5,15 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const morgan = require('morgan');
+const passport = require('passport');
 
 const { MONGODB_URI, MONGODB_OPTIONS, PORT } = require('./config');
+const authRouter = require('./routes/auth');
 const foldersRouter = require('./routes/folders');
+const localStrategy = require('./auth/localStrategy');
 const notesRouter = require('./routes/notes');
 const tagsRouter = require('./routes/tags');
+const usersRouter = require('./routes/users');
 
 // Create an Express application
 const app = express();
@@ -21,6 +25,9 @@ app.use(
   }),
 );
 
+// Configure passport
+passport.use(localStrategy);
+
 // Create a static webserver
 app.use(express.static('public'));
 
@@ -31,6 +38,8 @@ app.use(express.json());
 app.use('/api/notes', notesRouter);
 app.use('/api/folders', foldersRouter);
 app.use('/api/tags', tagsRouter);
+app.use('/api/users', usersRouter);
+app.use('/api', authRouter);
 
 // Custom 404 Not Found route handler
 app.use((req, res, next) => {
