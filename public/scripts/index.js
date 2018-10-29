@@ -1,4 +1,5 @@
-/* global $ noteful api store */
+/* eslint-disable */
+/* global noteful */
 'use strict';
 
 $(document).ready(function () {

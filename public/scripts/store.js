@@ -1,4 +1,4 @@
-// eslint-disable-next-line no-unused-vars
+/* eslint-disable */
 'use strict';
 
 const store = (function () {
