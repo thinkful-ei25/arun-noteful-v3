@@ -7,9 +7,10 @@ const User = require('../models/User');
 const router = new express.Router();
 
 router.post('/', (req, res, next) => {
-  const { username, password } = req.body;
+  const { username, password, fullname } = req.body;
 
-  User.create({ username, password })
+  User.hashPassword(password)
+    .then(digest => User.create({ username, fullname, password: digest }))
     .then((result) => {
       res
         .status(201)

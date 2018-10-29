@@ -20,9 +20,13 @@ describe('Authentication endpoints', () => {
     const user = {
       username: 'aseehra',
       password: 'thisismypasswordtherearemanylikeitbutthisoneismind',
+      fullname: 'Arun Seehra',
     };
 
-    beforeEach(() => User.create(user));
+    // prettier-ignore
+    beforeEach(() => User
+      .hashPassword(user.password)
+      .then(digest => User.create(Object.assign({}, user, { password: digest }))));
 
     context('with valid credentials', () => {
       it('should return the user object as JSON', function () {
@@ -33,7 +37,7 @@ describe('Authentication endpoints', () => {
           .then((res) => {
             expect(res).to.have.status(200);
             expect(res).to.be.json;
-            expect(res.body).to.include.all.keys('username', 'id');
+            expect(res.body).to.include.all.keys('username', 'id', 'fullname');
             expect(res.body).to.not.include.all.keys('password');
 
             expect(res.body.username).to.equal(user.username);

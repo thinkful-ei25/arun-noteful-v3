@@ -1,5 +1,6 @@
 'use strict';
 
+const bcrypt = require('bcryptjs');
 const chai = require('chai');
 const chaiHttp = require('chai-http');
 
@@ -37,7 +38,10 @@ describe('/api/users', () => {
         .then((result) => {
           expect(result.toObject()).to.include.all.keys('username', 'password');
           expect(result.username).to.equal(fixture.username);
-          expect(result.password).to.equal(fixture.password);
+          return bcrypt.compare(fixture.password, result.password);
+        })
+        .then((passwordIsCorrect) => {
+          expect(passwordIsCorrect).to.be.true;
         });
     });
   });

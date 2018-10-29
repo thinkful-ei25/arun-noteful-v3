@@ -16,6 +16,7 @@
 		"seed-db": "node db/utils/seedDatabase"
 	},
 	"dependencies": {
+		"bcryptjs": "^2.4.3",
 		"express": "^4.16.3",
 		"mongoose": "^5.3.6",
 		"morgan": "^1.9.0",

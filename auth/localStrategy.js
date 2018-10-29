@@ -6,17 +6,22 @@ const { LoginError } = require('./errors');
 const User = require('../models/User');
 
 const localStrategy = new LocalStrategy((username, password, done) => {
+  let user;
   User.findOne({ username })
     .then((result) => {
-      if (!result) {
+      user = result;
+      if (!user) {
         throw new LoginError('Incorrect username', 'username');
       }
 
-      if (!result.validatePassword(password)) {
+      return user.validatePassword(password);
+    })
+    .then((passwordIsValid) => {
+      if (!passwordIsValid) {
         throw new LoginError('Incorrect password', 'password');
       }
 
-      done(null, result);
+      done(null, user);
     })
     .catch((err) => {
       if (err instanceof LoginError) {
